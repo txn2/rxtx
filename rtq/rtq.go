@@ -10,7 +10,6 @@ import (
 
 	"github.com/bhoriuchi/go-bunyan/bunyan"
 	"github.com/coreos/bbolt"
-	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 )
 
@@ -27,9 +26,9 @@ type Message struct {
 
 // txMessageBatch Holds a batch of Messages for the server
 type txMessageBatch struct {
-	uuid     string
-	size     int
-	messages []Message
+	Uuid     string    `json:"uuid"`
+	Size     int       `json:"size"`
+	Messages []Message `json:"messages"`
 }
 
 // Config options for rxtx
@@ -115,7 +114,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 // batch size.
 func (rt *rtQ) getMessageBatch() txMessageBatch {
 	mb := txMessageBatch{
-		uuid: uuid.NewV4().String(),
+		Uuid: uuid.NewV4().String(),
 	}
 
 	rt.db.View(func(tx *bolt.Tx) error {
@@ -127,7 +126,7 @@ func (rt *rtQ) getMessageBatch() txMessageBatch {
 			// TODO store in tx message
 			msg := Message{}
 			json.Unmarshal(v, &msg)
-			mb.messages = append(mb.messages, msg)
+			mb.Messages = append(mb.Messages, msg)
 			i++
 			if i > rt.cfg.Batch {
 				break
@@ -137,7 +136,7 @@ func (rt *rtQ) getMessageBatch() txMessageBatch {
 		return nil
 	})
 
-	mb.size = len(mb.messages)
+	mb.Size = len(mb.Messages)
 
 	return mb
 }
@@ -149,6 +148,8 @@ func (rt *rtQ) transmit(msgB txMessageBatch) error {
 	if err != nil {
 		return err
 	}
+
+	rt.log("SENDING: %s", jsonStr)
 
 	req, err := http.NewRequest("POST", rt.cfg.Receiver, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
@@ -162,7 +163,7 @@ func (rt *rtQ) transmit(msgB txMessageBatch) error {
 
 	rt.log("Tx Status: %s", resp.Status)
 
-	return errors.New("cannot send batch.")
+	return nil
 }
 
 // tx gets a batch of messages and transmits it to the server (receiver)
@@ -172,7 +173,7 @@ func (rt *rtQ) tx() {
 	// get a message batch
 	mb := rt.getMessageBatch()
 
-	rt.log("Txing %d Messages.", mb.size)
+	rt.log("Txing %d Messages.", mb.Size)
 
 	// try to send
 	err := rt.transmit(mb)
