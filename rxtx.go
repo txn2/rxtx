@@ -7,7 +7,10 @@ import (
 
 	"fmt"
 
+	"io/ioutil"
+
 	"github.com/bhoriuchi/go-bunyan/bunyan"
+	"github.com/cjimti/gin-bunyan"
 	"github.com/cjimti/rxtx/rtq"
 	"github.com/gin-gonic/gin"
 )
@@ -30,19 +33,27 @@ func main() {
 
 	// database
 	q, err := rtq.NewQ("rxtx", rtq.Config{
-		Interval: 10,   // send every 10 seconds
-		Batch:    1000, // batch size
-	}) // send to server ever 10 seconds
+		Interval: 10, // send every 10 seconds
+		Batch:    20, // batch size
+		Logger:   &blog,
+		Receiver: "http://localhost:8081/collector", // can receive a POST with JSON txMessageBatch
+	})
 	if err != nil {
 		panic(err)
 	}
 
-	// server
+	// gin config
 	gin.SetMode(gin.ReleaseMode)
 	gin.DisableConsoleColor()
 
-	// todo: send gin logs to bunyan
+	// discard default logger
+	gin.DefaultWriter = ioutil.Discard
+
+	//get a router
 	r := gin.Default()
+
+	// use bunyan logger
+	r.Use(ginbunyan.Ginbunyan(&blog))
 
 	r.POST("/rx/:producer/:label/*key", func(c *gin.Context) {
 		//var json map[string]interface{}
