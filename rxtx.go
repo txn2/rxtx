@@ -24,7 +24,7 @@ func main() {
 	var name = flag.String("name", "rxtx", "Service name.")
 	var interval = flag.Int("interval", 30, "Seconds between intervals.")
 	var batch = flag.Int("batch", 1000, "Batch size.")
-	var ingest = flag.String("ingest", "http://localhost:8081/ingest", "Ingest server.")
+	var ingest = flag.String("ingest", "http://localhost:8081/in", "Ingest server.")
 
 	flag.Parse()
 
