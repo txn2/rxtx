@@ -24,8 +24,8 @@ type Message struct {
 	Payload  map[string]interface{} `json:"payload"`
 }
 
-// txMessageBatch Holds a batch of Messages for the server
-type txMessageBatch struct {
+// MessageBatch Holds a batch of Messages for the server
+type MessageBatch struct {
 	Uuid     string    `json:"uuid"`
 	Size     int       `json:"size"`
 	Messages []Message `json:"messages"`
@@ -112,8 +112,8 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 // getMessageBatch starts at the first record and
 // builds a MessageBatch for each found key up to the
 // batch size.
-func (rt *rtQ) getMessageBatch() txMessageBatch {
-	mb := txMessageBatch{
+func (rt *rtQ) getMessageBatch() MessageBatch {
+	mb := MessageBatch{
 		Uuid: uuid.NewV4().String(),
 	}
 
@@ -142,7 +142,7 @@ func (rt *rtQ) getMessageBatch() txMessageBatch {
 }
 
 // transmit attempts to transmit a message batch
-func (rt *rtQ) transmit(msgB txMessageBatch) error {
+func (rt *rtQ) transmit(msgB MessageBatch) error {
 
 	jsonStr, err := json.Marshal(msgB)
 	if err != nil {
