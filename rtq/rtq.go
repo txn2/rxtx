@@ -187,15 +187,15 @@ func (rt *rtQ) tx() {
 
 // waitTx sleeps for rt.cfg.Interval * time.Second then performs a tx.
 func (rt *rtQ) waitTx() {
-	time.Sleep(rt.cfg.Interval * time.Second)
-	rt.log("Tx Waiting %d seconds.\n", rt.cfg.Interval)
+	rt.log("Tx Waiting %d seconds.", rt.cfg.Interval/time.Second)
+	time.Sleep(rt.cfg.Interval)
 	rt.tx() // recursion
 }
 
 // Write to the queue
 func (rt *rtQ) QWrite(msg Message) error {
 
-	rt.log("Send to channel: %s\n", msg)
+	rt.log("Send to channel: %s", msg)
 	rt.mq <- msg
 
 	return nil

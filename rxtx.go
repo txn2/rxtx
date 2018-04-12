@@ -9,6 +9,10 @@ import (
 
 	"io/ioutil"
 
+	"flag"
+
+	"time"
+
 	"github.com/bhoriuchi/go-bunyan/bunyan"
 	"github.com/cjimti/gin-bunyan"
 	"github.com/cjimti/rxtx/rtq"
@@ -16,10 +20,16 @@ import (
 )
 
 func main() {
-	port := "8080"
+	var port = flag.String("port", "8080", "Server port.")
+	var name = flag.String("name", "rxtx", "Service name.")
+	var interval = flag.Int("interval", 30, "Seconds between intervals.")
+	var batch = flag.Int("batch", 1000, "Batch size.")
+	var ingest = flag.String("ingest", "http://localhost:8081/ingest", "Ingest server.")
+
+	flag.Parse()
 
 	logConfig := bunyan.Config{
-		Name:   "rxtx",
+		Name:   *name,
 		Stream: os.Stdout,
 		Level:  bunyan.LogLevelDebug,
 	}
@@ -33,10 +43,10 @@ func main() {
 
 	// database
 	q, err := rtq.NewQ("rxtx", rtq.Config{
-		Interval: 10, // send every 10 seconds
-		Batch:    20, // batch size
+		Interval: time.Duration(*interval) * time.Second, // send every 10 seconds
+		Batch:    *batch,                                 // batch size
 		Logger:   &blog,
-		Receiver: "http://localhost:8081/collector", // can receive a POST with JSON txMessageBatch
+		Receiver: *ingest, // can receive a POST with JSON txMessageBatch
 	})
 	if err != nil {
 		panic(err)
@@ -98,6 +108,7 @@ func main() {
 
 	})
 
+	blog.Info("Listening on port %s", *port)
 	// block on server run
-	r.Run(":" + port)
+	r.Run(":" + *port)
 }
