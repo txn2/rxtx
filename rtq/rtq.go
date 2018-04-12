@@ -123,7 +123,6 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 		// get the first rt.cfg.Batch
 		i := 1
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			// TODO store in tx message
 			msg := Message{}
 			json.Unmarshal(v, &msg)
 			mb.Messages = append(mb.Messages, msg)
@@ -148,8 +147,6 @@ func (rt *rtQ) transmit(msgB MessageBatch) error {
 	if err != nil {
 		return err
 	}
-
-	rt.log("SENDING: %s", jsonStr)
 
 	req, err := http.NewRequest("POST", rt.cfg.Receiver, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
