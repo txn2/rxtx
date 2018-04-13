@@ -16,15 +16,17 @@ go run ./rxtx.go -h
 
 Usage of rxtx:
   -batch int
-        Batch size. (default 1000)
+    	Batch size. (default 5000)
   -ingest string
-        Ingest server. (default "http://localhost:8081/ingest")
+    	Ingest server. (default "http://localhost:8081/in")
   -interval int
-        Seconds between intervals. (default 30)
+    	Seconds between intervals. (default 30)
+  -maxq int
+    	Max number of message in queue. (default 2000000)
   -name string
-        Service name. (default "rxtx")
+    	Service name. (default "rxtx")
   -port string
-        Server port. (default "8080")
+    	Server port. (default "8080")
 
 ```
 
