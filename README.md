@@ -1,12 +1,17 @@
 ![rxtx data transmission](mast.jpg)
+[![irsync Release](https://img.shields.io/github/release/cjimti/rxtx.svg)](https://github.com/cjimti/rxtx/releases)
 [![Build Status](https://travis-ci.org/cjimti/rxtx.svg?branch=master)](https://travis-ci.org/cjimti/rxtx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/rxtx)](https://goreportcard.com/report/github.com/cjimti/rxtx)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4cbc94c46027f0e3161/maintainability)](https://codeclimate.com/github/cjimti/rxtx/maintainability)
 [![GoDoc](https://godoc.org/github.com/cjimti/irsync/rxtx?status.svg)](https://godoc.org/github.com/cjimti/rxtx/rtq)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_shield)
 
+[![Docker Container Image Size](https://shields.beevelop.com/docker/image/image-size/cjimti/rxtx/latest.svg)](https://hub.docker.com/r/cjimti/irsync/)
+[![Docker Container Layers](https://shields.beevelop.com/docker/image/layers/cjimti/rxtx/latest.svg)](https://hub.docker.com/r/cjimti/irsync/)
+[![Docker Container Pulls](https://img.shields.io/docker/pulls/cjimti/rxtx.svg)](https://hub.docker.com/r/cjimti/rxtx/)
+
 # rxtx
-[wip] Data collector / Data transmitter
+**rxtx** is a queue based data collector > data transmitter. Useful for online/offline data collection, back pressure buffering or general queuing. **rxtx** uses [bbolt](https://github.com/coreos/bbolt) maintained by CoreOs, a single file database for soring messages before they are able to be sent.
 
 ## Test
 
