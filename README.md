@@ -25,6 +25,8 @@ Usage of rxtx:
     	Max number of message in queue. (default 2000000)
   -name string
     	Service name. (default "rxtx")
+  -path string
+    	Directory to store database. (default "./")
   -port string
     	Server port. (default "8080")
 
