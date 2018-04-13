@@ -13,7 +13,32 @@
 # rxtx
 **rxtx** is a queue based data collector > data transmitter. Useful for online/offline data collection, back pressure buffering or general queuing. **rxtx** uses [bbolt](https://github.com/coreos/bbolt) maintained by CoreOs, a single file database for soring messages before they are able to be sent.
 
-## Test
+## Test on MacOs
+
+### Install with [brew]
+```bash
+brew tap cjimti/homebrew-tap
+brew install rxtx
+```
+
+### Help
+```bash
+rxtx -h
+```
+
+## Test [Docker] Container
+
+### Help
+```bash
+docker run --rm -it cjimti/rxtx -h
+```
+on arm 6/7 based device:
+```bash
+docker run --rm -it cjimti/rxtx:arm32v6-1.0.2 -h
+```
+
+
+## Test Source
 
 #### Help
 ```bash
