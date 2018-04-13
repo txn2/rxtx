@@ -55,5 +55,27 @@ curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me
  time for i in {1..1000}; do curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me/generic_data/generic/test/data; done
  ```
 
+#### Release Steps
+
+- Commit latest changes
+- [Tag] a version `git tag -a v2.0 -m "Version 2.0"`
+- Push tag `git push origin v2.0`
+- Run: `GITHUB_TOKEN=$GITHUB_TOKEN goreleaser --rm-dist`
+
+## Resources
+
+- [GORELEASER]
+- [Docker]
+- [homebrew]
+
+
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_large)
+
+
+
+[homebrew]: https://brew.sh/
+[brew]: https://brew.sh/
+[GORELEASER]: https://goreleaser.com/
+[Docker]: https://www.docker.com/
+[Tag]: https://git-scm.com/book/en/v2/Git-Basics-Tagging
