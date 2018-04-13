@@ -41,12 +41,12 @@ type Config struct {
 
 // rtQ private struct see NewQ
 type rtQ struct {
-	db       *bolt.DB                  // the database
-	cfg      Config                    // configuration
-	mq       chan Message              // message channel
-	txSeq    []byte                    // max transmitted sequence
-	log      func(args ...interface{}) // log output
-	logError func(args ...interface{}) // log error output
+	db          *bolt.DB                  // the database
+	cfg         Config                    // configuration
+	mq          chan Message              // message channel
+	txSeq       []byte                    // max transmitted sequence
+	status      func(args ...interface{}) // status output
+	statusError func(args ...interface{}) // status error output
 }
 
 // NewQ returns a new rtQ
@@ -97,11 +97,11 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 	}()
 
 	rtq := &rtQ{
-		db:       db,  // database
-		cfg:      cfg, // Config
-		mq:       mq,  // Message channel
-		log:      cfg.Logger.Info,
-		logError: cfg.Logger.Error,
+		db:          db,  // database
+		cfg:         cfg, // Config
+		mq:          mq,  // Message channel
+		status:      cfg.Logger.Info,
+		statusError: cfg.Logger.Error,
 	}
 
 	go rtq.tx() // start transmitting
@@ -158,7 +158,7 @@ func (rt *rtQ) transmit(msgB MessageBatch) error {
 
 	defer resp.Body.Close()
 
-	rt.log("Tx Status: %s", resp.Status)
+	rt.status("Tx Status: %s", resp.Status)
 
 	return nil
 }
@@ -170,12 +170,12 @@ func (rt *rtQ) tx() {
 	// get a message batch
 	mb := rt.getMessageBatch()
 
-	rt.log("Txing %d Messages.", mb.Size)
+	rt.status("Txing %d Messages.", mb.Size)
 
 	// try to send
 	err := rt.transmit(mb)
 	if err != nil {
-		rt.logError("Tx Error: %s", err.Error())
+		rt.statusError("Tx Error: %s", err.Error())
 		rt.waitTx()
 		return
 	}
@@ -185,7 +185,7 @@ func (rt *rtQ) tx() {
 
 // waitTx sleeps for rt.cfg.Interval * time.Second then performs a tx.
 func (rt *rtQ) waitTx() {
-	rt.log("Tx Waiting %d seconds.", rt.cfg.Interval/time.Second)
+	rt.status("Tx Waiting %d seconds.", rt.cfg.Interval/time.Second)
 	time.Sleep(rt.cfg.Interval)
 	rt.tx() // recursion
 }
@@ -193,7 +193,7 @@ func (rt *rtQ) waitTx() {
 // Write to the queue
 func (rt *rtQ) QWrite(msg Message) error {
 
-	rt.log("Send to channel: %s", msg)
+	rt.status("Send to channel: %s", msg)
 	rt.mq <- msg
 
 	return nil

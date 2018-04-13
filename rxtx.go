@@ -65,11 +65,11 @@ func main() {
 	// use bunyan logger
 	r.Use(ginbunyan.Ginbunyan(&blog))
 
-	r.POST("/rx/:producer/:label/*key", func(c *gin.Context) {
+	r.POST("/rx/:producer/:key/*label", func(c *gin.Context) {
 		//var json map[string]interface{}
 		producer := c.Param("producer")
-		label := c.Param("label")
 		key := c.Param("key")
+		label := c.Param("label")
 
 		rawData, _ := c.GetRawData()
 
