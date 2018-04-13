@@ -1,4 +1,5 @@
 .idea
+dist/
 *.db
 
 # Binaries for programs and plugins

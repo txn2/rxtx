@@ -53,7 +53,23 @@ curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me
 #### Add 1000 messages to the queue.
 ```bash
  time for i in {1..1000}; do curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me/generic_data/generic/test/data; done
- ```
+```
+
+### Building and Releasing
+
+**rxtx** uses [GORELEASER] to build binaries and [Docker] containers.
+
+#### Test Release Steps
+
+Install [GORELEASER] with [brew] (MacOS):
+```bash
+brew install goreleaser/tap/goreleaser
+```
+
+Build without releasing:
+```bash
+goreleaser --skip-publish --rm-dist --skip-validate
+```
 
 #### Release Steps
 
@@ -72,10 +88,14 @@ curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_large)
 
-
-
 [homebrew]: https://brew.sh/
 [brew]: https://brew.sh/
 [GORELEASER]: https://goreleaser.com/
 [Docker]: https://www.docker.com/
 [Tag]: https://git-scm.com/book/en/v2/Git-Basics-Tagging
+
+
+[rsync]: https://en.wikipedia.org/wiki/Rsync
+[Docker]: https://www.docker.com/
+[GORELEASER]: https://goreleaser.com/
+[brew]: https://brew.sh/
