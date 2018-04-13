@@ -21,6 +21,7 @@ import (
 
 func main() {
 	var port = flag.String("port", "8080", "Server port.")
+	var path = flag.String("path", "./", "Directory to store database.")
 	var name = flag.String("name", "rxtx", "Service name.")
 	var interval = flag.Int("interval", 30, "Seconds between intervals.")
 	var batch = flag.Int("batch", 5000, "Batch size.")
@@ -49,6 +50,7 @@ func main() {
 		Logger:     &blog,
 		Receiver:   *ingest, // can receive a POST with JSON txMessageBatch
 		MaxInQueue: *maxq,
+		Path:       *path,
 	})
 	if err != nil {
 		panic(err)

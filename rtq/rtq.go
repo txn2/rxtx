@@ -38,6 +38,7 @@ type Config struct {
 	MaxInQueue int
 	Logger     *bunyan.Logger
 	Receiver   string
+	Path       string
 }
 
 // rtQ private struct see NewQ
@@ -54,7 +55,7 @@ type rtQ struct {
 
 // NewQ returns a new rtQ
 func NewQ(name string, cfg Config) (*rtQ, error) {
-	db, err := bolt.Open(name+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(cfg.Path+name+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
 	}
