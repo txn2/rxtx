@@ -11,7 +11,7 @@
 [![Docker Container Pulls](https://img.shields.io/docker/pulls/cjimti/rxtx.svg)](https://hub.docker.com/r/cjimti/rxtx/)
 
 # rxtx
-**rxtx** is a queue based data collector > data transmitter. Useful for online/offline data collection, back pressure buffering or general queuing. **rxtx** uses [bbolt](https://github.com/coreos/bbolt) maintained by CoreOs, a single file database for soring messages before they are able to be sent.
+**rxtx** is a queue based data collector > data transmitter. Useful for online/offline data collection, back pressure buffering or general queuing. **rxtx** uses [bbolt](https://github.com/coreos/bbolt) maintained by CoreOs, a single file database for storing messages before they can be sent.
 
 ## Test on MacOs
 
@@ -46,19 +46,19 @@ go run ./rxtx.go -h
 
 Usage of rxtx:
   -batch int
-    	Batch size. (default 5000)
+        Batch size. (default 5000)
   -ingest string
-    	Ingest server. (default "http://localhost:8081/in")
+        Ingest server. (default "http://localhost:8081/in")
   -interval int
-    	Seconds between intervals. (default 30)
+        Seconds between intervals. (default 30)
   -maxq int
-    	Max number of message in queue. (default 2000000)
+        Max number of message in queue. (default 2000000)
   -name string
-    	Service name. (default "rxtx")
+        Service name. (default "rxtx")
   -path string
-    	Directory to store database. (default "./")
+        Directory to store database. (default "./")
   -port string
-    	Server port. (default "8080")
+        Server port. (default "8080")
 
 ```
 
@@ -69,7 +69,7 @@ go run ./rxtx.go
 
 #### Add message to queue
 
-The **rxtx** services accepts http **POST** data to an API endpoint in the following form /rx/**PRODUCER**/**KEY**/**LABEL/...**/. One label is required, however as many labels as nessary may be added, separated by a forward slash.
+The **rxtx** services accepts HTTP **POST** data to an API endpoint in the following form /rx/**PRODUCER**/**KEY**/**LABEL/...**/. One label is required, however as many labels as necessary may be added, separated by a forward slash.
 
 ```bash
 curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me/generic_data/generic/test/data
