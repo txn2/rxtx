@@ -23,7 +23,8 @@ func main() {
 	var port = flag.String("port", "8080", "Server port.")
 	var name = flag.String("name", "rxtx", "Service name.")
 	var interval = flag.Int("interval", 30, "Seconds between intervals.")
-	var batch = flag.Int("batch", 1000, "Batch size.")
+	var batch = flag.Int("batch", 5000, "Batch size.")
+	var maxq = flag.Int("maxq", 2000000, "Max number of message in queue.")
 	var ingest = flag.String("ingest", "http://localhost:8081/in", "Ingest server.")
 
 	flag.Parse()
@@ -43,10 +44,11 @@ func main() {
 
 	// database
 	q, err := rtq.NewQ("rxtx", rtq.Config{
-		Interval: time.Duration(*interval) * time.Second, // send every 10 seconds
-		Batch:    *batch,                                 // batch size
-		Logger:   &blog,
-		Receiver: *ingest, // can receive a POST with JSON txMessageBatch
+		Interval:   time.Duration(*interval) * time.Second, // send every 10 seconds
+		Batch:      *batch,                                 // batch size
+		Logger:     &blog,
+		Receiver:   *ingest, // can receive a POST with JSON txMessageBatch
+		MaxInQueue: *maxq,
 	})
 	if err != nil {
 		panic(err)

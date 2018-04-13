@@ -33,10 +33,11 @@ type MessageBatch struct {
 
 // Config options for rxtx
 type Config struct {
-	Interval time.Duration
-	Batch    int
-	Logger   *bunyan.Logger
-	Receiver string
+	Interval   time.Duration
+	Batch      int
+	MaxInQueue int
+	Logger     *bunyan.Logger
+	Receiver   string
 }
 
 // rtQ private struct see NewQ
@@ -44,7 +45,9 @@ type rtQ struct {
 	db          *bolt.DB                  // the database
 	cfg         Config                    // configuration
 	mq          chan Message              // message channel
+	remove      chan int                  // number of records to remove
 	txSeq       []byte                    // max transmitted sequence
+	mCount      int                       // last reported message count
 	status      func(args ...interface{}) // status output
 	statusError func(args ...interface{}) // status error output
 }
@@ -69,6 +72,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 	}
 
 	mq := make(chan Message, 0)
+	remove := make(chan int, 0)
 
 	go func() {
 		// begin kv writer
@@ -94,19 +98,40 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 
 					return nil
 				})
+			case rmi := <-remove:
+				db.Update(func(tx *bolt.Tx) error {
+					bucket := tx.Bucket([]byte("mq"))
+
+					c := bucket.Cursor()
+
+					// get the first rt.cfg.Batch
+					i := 1
+					for k, _ := c.First(); k != nil; k, _ = c.Next() {
+						c.Delete()
+						i++
+						if i > rmi {
+							break
+						}
+					}
+
+					return nil
+				})
+
 			}
 		}
 	}()
 
 	rtq := &rtQ{
-		db:          db,  // database
-		cfg:         cfg, // Config
-		mq:          mq,  // Message channel
+		db:          db,     // database
+		cfg:         cfg,    // Config
+		mq:          mq,     // Message channel
+		remove:      remove, // Remove message channel
 		status:      cfg.Logger.Info,
 		statusError: cfg.Logger.Error,
 	}
 
 	go rtq.tx() // start transmitting
+	//rtq.QStats(b) // start status monitoring
 
 	return rtq, nil
 }
@@ -121,7 +146,25 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 	}
 
 	rt.db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte("mq")).Cursor()
+		bucket := tx.Bucket([]byte("mq"))
+
+		// get bucket stats
+		stats := bucket.Stats()
+
+		// Encode stats to JSON and print to STDERR.
+		//json.NewEncoder(os.Stderr).Encode(stats)
+		rt.status("Records in mq: %d", stats.KeyN)
+
+		ingressOver := 0
+		if rt.mCount > 0 {
+			ingressOver = stats.KeyN - rt.mCount
+		}
+		rt.status("NEW Records in mq: %d", ingressOver)
+
+		// store the new count
+		rt.mCount = stats.KeyN
+
+		c := bucket.Cursor()
 
 		// get the first rt.cfg.Batch
 		i := 1
@@ -167,7 +210,7 @@ func (rt *rtQ) transmit(msgB MessageBatch) error {
 }
 
 // tx gets a batch of messages and transmits it to the server (receiver)
-// TODO: some math to make sure we keep up
+// TODO: some math to make sure we keep up (for now remove the batch if the count is above the threshold)
 func (rt *rtQ) tx() {
 
 	// get a message batch
@@ -178,10 +221,19 @@ func (rt *rtQ) tx() {
 	// try to send
 	err := rt.transmit(mb)
 	if err != nil {
+		// transmission failed
 		rt.statusError("Tx Error: %s", err.Error())
+
+		// is the queue larger than allowed
+		if rt.mCount > rt.cfg.MaxInQueue {
+			rt.remove <- rt.mCount - rt.cfg.MaxInQueue
+		}
 		rt.waitTx()
 		return
 	}
+
+	// transmission was successful so we can remove
+	// regardless of the queue size
 
 	rt.waitTx()
 }
