@@ -76,7 +76,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 			select {
 			case msg := <-mq:
 				db.Update(func(tx *bolt.Tx) error {
-					uuidV4 := uuid.NewV4()
+					uuidV4, _ := uuid.NewV4()
 
 					msg.Time = time.Now()
 					msg.Uuid = uuidV4.String()
@@ -115,7 +115,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 // builds a MessageBatch for each found key up to the
 // batch size.
 func (rt *rtQ) getMessageBatch() MessageBatch {
-	uuidV4 := uuid.NewV4()
+	uuidV4, _ := uuid.NewV4()
 	mb := MessageBatch{
 		Uuid: uuidV4.String(),
 	}
