@@ -46,7 +46,7 @@ dockers:
     goos: linux
     goarch: amd64
     goarm: ''
-    binary: irsync
+    binary: rxtx
     image: cjimti/rxtx
     dockerfile: dockerfiles/amd64/Dockerfile
     tag_templates:
@@ -56,7 +56,7 @@ dockers:
     goos: linux
     goarch: arm
     goarm: 6
-    binary: irsync
+    binary: rxtx
     image: cjimti/rxtx
     dockerfile: dockerfiles/arm32v6/Dockerfile
     tag_templates:
