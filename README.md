@@ -1,11 +1,8 @@
 [![Build Status](https://travis-ci.org/cjimti/rxtx.svg?branch=master)](https://travis-ci.org/cjimti/rxtx)
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/rxtx)](https://goreportcard.com/report/github.com/cjimti/rxtx)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_shield)
-
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4cbc94c46027f0e3161/maintainability)](https://codeclimate.com/github/cjimti/rxtx/maintainability)
-
 [![GoDoc](https://godoc.org/github.com/cjimti/irsync/rxtx?status.svg)](https://godoc.org/github.com/cjimti/rxtx/rtq)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_shield)
 
 # rxtx
 [wip] Data collector / Data transmitter
