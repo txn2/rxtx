@@ -1,16 +1,9 @@
 package main
 
 import (
-	"os"
-
-	"encoding/json"
-
-	"fmt"
-
-	"io/ioutil"
-
 	"flag"
-
+	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/bhoriuchi/go-bunyan/bunyan"
@@ -63,54 +56,19 @@ func main() {
 	// discard default logger
 	gin.DefaultWriter = ioutil.Discard
 
-	//get a router
+	// get a router
 	r := gin.Default()
+
+	// add queue to the context
+	r.Use(func(c *gin.Context) {
+		c.Set("Q", q)
+		c.Next()
+	})
 
 	// use bunyan logger
 	r.Use(ginbunyan.Ginbunyan(&blog))
 
-	r.POST("/rx/:producer/:key/*label", func(c *gin.Context) {
-		//var json map[string]interface{}
-		producer := c.Param("producer")
-		key := c.Param("key")
-		label := c.Param("label")
-
-		rawData, _ := c.GetRawData()
-
-		// all data is json
-		payload := make(map[string]interface{})
-		err := json.Unmarshal(rawData, &payload)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"status":  "FAIL",
-				"message": fmt.Sprintf("could not unmarshal json: %s", rawData),
-			})
-			return
-		}
-
-		// build the message
-		msg := rtq.Message{
-			Producer: producer,
-			Label:    label,
-			Key:      key,
-			Payload:  payload,
-		}
-
-		// write the message
-		err = q.QWrite(msg)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"status":  "FAIL",
-				"message": fmt.Sprintf("failed to write message: %s", err.Error()),
-			})
-			return
-		}
-
-		c.JSON(200, gin.H{
-			"status": "OK",
-		})
-
-	})
+	r.POST("/rx/:producer/:key/*label", rtq.RxRouteHandler)
 
 	blog.Info("Listening on port %s", *port)
 	// block on server run
