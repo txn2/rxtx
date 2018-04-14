@@ -62,14 +62,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 		return nil, err
 	}
 
-	// make our message queue bucket
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("mq"))
-		if err != nil {
-			return fmt.Errorf("create bucket: %s", err)
-		}
-		return nil
-	})
+	err = ensureMqBucket(db)
 	if err != nil {
 		return nil, err
 	}
@@ -77,52 +70,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 	mq := make(chan Message, 0)
 	remove := make(chan int, 0)
 
-	go func() {
-		// begin kv writer
-		for {
-			select {
-			case msg := <-mq:
-				db.Update(func(tx *bolt.Tx) error {
-					uuidV4, _ := uuid.NewV4()
-
-					msg.Time = time.Now()
-					msg.Uuid = uuidV4.String()
-
-					b := tx.Bucket([]byte("mq"))
-					id, _ := b.NextSequence()
-
-					msg.Seq = fmt.Sprintf("%d%d%d%012d", msg.Time.Year(), msg.Time.Month(), msg.Time.Day(), id)
-
-					buf, err := json.Marshal(msg)
-					if err != nil {
-						return err
-					}
-					b.Put([]byte(msg.Seq), buf)
-
-					return nil
-				})
-			case rmi := <-remove:
-				db.Update(func(tx *bolt.Tx) error {
-					bucket := tx.Bucket([]byte("mq"))
-
-					c := bucket.Cursor()
-
-					// get the first rt.cfg.Batch
-					i := 1
-					for k, _ := c.First(); k != nil; k, _ = c.Next() {
-						c.Delete()
-						i++
-						if i > rmi {
-							break
-						}
-					}
-
-					return nil
-				})
-
-			}
-		}
-	}()
+	go messageHandler(db, mq, remove)
 
 	rtq := &rtQ{
 		db:          db,     // database
@@ -265,4 +213,67 @@ func (rt *rtQ) QWrite(msg Message) error {
 	rt.mq <- msg
 
 	return nil
+}
+
+// messageHandler listens to the mq and remove channels to add and
+// remove messages
+func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
+	// begin kv writer
+	for {
+		select {
+		case msg := <-mq:
+			db.Update(func(tx *bolt.Tx) error {
+				uuidV4, _ := uuid.NewV4()
+
+				msg.Time = time.Now()
+				msg.Uuid = uuidV4.String()
+
+				b := tx.Bucket([]byte("mq"))
+				id, _ := b.NextSequence()
+
+				msg.Seq = fmt.Sprintf("%d%d%d%012d", msg.Time.Year(), msg.Time.Month(), msg.Time.Day(), id)
+
+				buf, err := json.Marshal(msg)
+				if err != nil {
+					return err
+				}
+				b.Put([]byte(msg.Seq), buf)
+
+				return nil
+			})
+		case rmi := <-remove:
+			db.Update(func(tx *bolt.Tx) error {
+				bucket := tx.Bucket([]byte("mq"))
+
+				c := bucket.Cursor()
+
+				// get the first rt.cfg.Batch
+				i := 1
+				for k, _ := c.First(); k != nil; k, _ = c.Next() {
+					c.Delete()
+					i++
+					if i > rmi {
+						break
+					}
+				}
+
+				return nil
+			})
+
+		}
+	}
+}
+
+// ensureMqBocket makes a bucket for the message queue
+func ensureMqBucket(db *bolt.DB) error {
+	// make our message queue bucket
+	err := db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("mq"))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		return nil
+	})
+
+	return err
 }
