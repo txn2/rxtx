@@ -8,6 +8,8 @@ import (
 
 	"encoding/json"
 
+	"net"
+
 	"github.com/bhoriuchi/go-bunyan/bunyan"
 	"github.com/coreos/bbolt"
 	"github.com/satori/go.uuid"
@@ -197,7 +199,18 @@ func (rt *rtQ) transmit(msgB MessageBatch) error {
 
 	req, err := http.NewRequest("POST", rt.cfg.Receiver, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
+
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 10 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	client := &http.Client{
+		Timeout:   time.Second * 60,
+		Transport: netTransport,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -233,9 +246,8 @@ func (rt *rtQ) tx() {
 		return
 	}
 
-	// transmission was successful so we can remove
-	// regardless of the queue size
-
+	rt.status("Transmission complete. Removing %d records.", mb.Size)
+	rt.remove <- mb.Size
 	rt.waitTx()
 }
 
