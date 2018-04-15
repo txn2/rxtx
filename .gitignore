@@ -1,6 +1,7 @@
 .idea
 dist/
 *.db
+*.db*
 
 # Binaries for programs and plugins
 *.exe
