@@ -13,6 +13,8 @@
 # rxtx
 **rxtx** is a queue based data collector > data transmitter. Useful for online/offline data collection, back pressure buffering or general queuing. **rxtx** uses [bbolt](https://github.com/coreos/bbolt) maintained by CoreOs, a single file database for storing messages before they can be sent.
 
+[rtbeat](https://github.com/cjimti/rtbeat) was developed to consume **rxtx** POST data and publish as events into [elasticsearch], [logstash], [kafka], [redis] or directly to log files.
+
 ## Test on MacOs
 
 ### Install with [brew]
@@ -110,10 +112,13 @@ goreleaser --skip-publish --rm-dist --skip-validate
 
 ## Resources
 
+- [elasticsearch]
+- [logstash]
+- [kafka]
+- [redis]
 - [GORELEASER]
 - [Docker]
 - [homebrew]
-
 
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_large)
@@ -123,9 +128,7 @@ goreleaser --skip-publish --rm-dist --skip-validate
 [GORELEASER]: https://goreleaser.com/
 [Docker]: https://www.docker.com/
 [Tag]: https://git-scm.com/book/en/v2/Git-Basics-Tagging
-
-
-[rsync]: https://en.wikipedia.org/wiki/Rsync
-[Docker]: https://www.docker.com/
-[GORELEASER]: https://goreleaser.com/
-[brew]: https://brew.sh/
+[elasticsearch]: https://www.elastic.co/
+[logstash]: https://www.elastic.co/products/logstash
+[kafka]: https://kafka.apache.org/
+[redis]: https://redis.io/
