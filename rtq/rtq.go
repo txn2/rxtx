@@ -264,7 +264,7 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 	}
 }
 
-// ensureMqBocket makes a bucket for the message queue
+// ensureMqBucket makes a bucket for the message queue
 func ensureMqBucket(db *bolt.DB) error {
 	// make our message queue bucket
 	err := db.Update(func(tx *bolt.Tx) error {
