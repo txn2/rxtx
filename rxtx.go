@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"net/http"
+
 	"github.com/bhoriuchi/go-bunyan/bunyan"
 	"github.com/cjimti/gin-bunyan"
 	"github.com/cjimti/rxtx/rtq"
@@ -68,9 +70,18 @@ func main() {
 	// use bunyan logger
 	r.Use(ginbunyan.Ginbunyan(&blog))
 
-	r.POST("/rx/:producer/:key/*label", rtq.RxRouteHandler)
+	rxRoute := "/rx/:producer/:key/*label"
+	r.POST(rxRoute, rtq.RxRouteHandler)
+	r.OPTIONS(rxRoute, preflight)
 
 	blog.Info("Listening on port %s", *port)
 	// block on server run
 	r.Run(":" + *port)
+}
+
+// CORS
+func preflight(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
+	c.JSON(http.StatusOK, struct{}{})
 }
