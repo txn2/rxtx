@@ -10,7 +10,7 @@ import (
 
 	"github.com/bhoriuchi/go-bunyan/bunyan"
 	"github.com/cjimti/gin-bunyan"
-	"github.com/cjimti/rxtx/rtq"
+	"github.com/txn2/rxtx/rtq"
 	"github.com/gin-gonic/gin"
 )
 
