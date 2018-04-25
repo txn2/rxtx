@@ -47,7 +47,7 @@ dockers:
     goarch: amd64
     goarm: ''
     binary: rxtx
-    image: cjimti/rxtx
+    image: txn2/rxtx
     dockerfile: dockerfiles/amd64/Dockerfile
     tag_templates:
     - latest
@@ -57,7 +57,7 @@ dockers:
     goarch: arm
     goarm: 6
     binary: rxtx
-    image: cjimti/rxtx
+    image: txn2/rxtx
     dockerfile: dockerfiles/arm32v6/Dockerfile
     tag_templates:
     - "arm32v6-{{ .Version }}"
@@ -66,8 +66,8 @@ brew:
   name: rxtx
 
   github:
-    owner: cjimti
-    name: homebrew-tap
+    owner: txn2
+    name: tap
 
   commit_author:
     name: Craig Johnston
@@ -75,6 +75,6 @@ brew:
 
   folder: Formula
 
-  homepage: https://github.com/cjimti/rxtx
+  homepage: https://github.com/txn2/rxtx
 
   description: "Data queuing and transmission."

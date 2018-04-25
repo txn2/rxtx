@@ -1,25 +1,25 @@
 ![rxtx data transmission](mast.jpg)
-[![irsync Release](https://img.shields.io/github/release/cjimti/rxtx.svg)](https://github.com/cjimti/rxtx/releases)
-[![Build Status](https://travis-ci.org/cjimti/rxtx.svg?branch=master)](https://travis-ci.org/cjimti/rxtx)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/rxtx)](https://goreportcard.com/report/github.com/cjimti/rxtx)
-[![Maintainability](https://api.codeclimate.com/v1/badges/c4cbc94c46027f0e3161/maintainability)](https://codeclimate.com/github/cjimti/rxtx/maintainability)
-[![GoDoc](https://godoc.org/github.com/cjimti/irsync/rxtx?status.svg)](https://godoc.org/github.com/cjimti/rxtx/rtq)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_shield)
+[![irsync Release](https://img.shields.io/github/release/txn2/rxtx.svg)](https://github.com/txn2/rxtx/releases)
+[![Build Status](https://travis-ci.org/txn2/rxtx.svg?branch=master)](https://travis-ci.org/txn2/rxtx)
+[![Go Report Card](https://goreportcard.com/badge/github.com/txn2/rxtx)](https://goreportcard.com/report/github.com/txn2/rxtx)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c4cbc94c46027f0e3161/maintainability)](https://codeclimate.com/github/txn2/rxtx/maintainability)
+[![GoDoc](https://godoc.org/github.com/txn2/irsync/rxtx?status.svg)](https://godoc.org/github.com/txn2/rxtx/rtq)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ftxn2%2Frxtx.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Ftxn2%2Frxtx?ref=badge_shield)
 
-[![Docker Container Image Size](https://shields.beevelop.com/docker/image/image-size/cjimti/rxtx/latest.svg)](https://hub.docker.com/r/cjimti/irsync/)
-[![Docker Container Layers](https://shields.beevelop.com/docker/image/layers/cjimti/rxtx/latest.svg)](https://hub.docker.com/r/cjimti/irsync/)
-[![Docker Container Pulls](https://img.shields.io/docker/pulls/cjimti/rxtx.svg)](https://hub.docker.com/r/cjimti/rxtx/)
+[![Docker Container Image Size](https://shields.beevelop.com/docker/image/image-size/txn2/rxtx/latest.svg)](https://hub.docker.com/r/txn2/irsync/)
+[![Docker Container Layers](https://shields.beevelop.com/docker/image/layers/txn2/rxtx/latest.svg)](https://hub.docker.com/r/txn2/irsync/)
+[![Docker Container Pulls](https://img.shields.io/docker/pulls/txn2/rxtx.svg)](https://hub.docker.com/r/txn2/rxtx/)
 
 # rxtx
 **rxtx** is a queue based data collector > data transmitter. Useful for online/offline data collection, back pressure buffering or general queuing. **rxtx** uses [bbolt](https://github.com/coreos/bbolt) maintained by CoreOs, a single file database for storing messages before they can be sent.
 
-[rtbeat](https://github.com/cjimti/rtbeat) was developed to consume **rxtx** POST data and publish as events into [elasticsearch], [logstash], [kafka], [redis] or directly to log files.
+[rtbeat](https://github.com/txn2/rtbeat) was developed to consume **rxtx** POST data and publish as events into [elasticsearch], [logstash], [kafka], [redis] or directly to log files.
 
 ## Test on MacOs
 
 ### Install with [brew]
 ```bash
-brew tap cjimti/homebrew-tap
+brew tap txn2/homebrew-tap
 brew install rxtx
 ```
 
@@ -32,11 +32,11 @@ rxtx -h
 
 ### Help
 ```bash
-docker run --rm -it cjimti/rxtx -h
+docker run --rm -it txn2/rxtx -h
 ```
 on arm 6/7 based device:
 ```bash
-docker run --rm -it cjimti/rxtx:arm32v6-1.0.2 -h
+docker run --rm -it txn2/rxtx:arm32v6-1.0.2 -h
 ```
 
 
@@ -121,7 +121,7 @@ goreleaser --skip-publish --rm-dist --skip-validate
 - [homebrew]
 
 ## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcjimti%2Frxtx.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcjimti%2Frxtx?ref=badge_large)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ftxn2%2Frxtx.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Ftxn2%2Frxtx?ref=badge_large)
 
 [homebrew]: https://brew.sh/
 [brew]: https://brew.sh/
