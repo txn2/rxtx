@@ -67,7 +67,7 @@ brew:
 
   github:
     owner: txn2
-    name: tap
+    name: homebrew-tap
 
   commit_author:
     name: Craig Johnston
