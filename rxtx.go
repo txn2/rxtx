@@ -19,8 +19,8 @@ func main() {
 	var path = flag.String("path", "./", "Directory to store database.")
 	var name = flag.String("name", "rxtx", "Service name.")
 	var interval = flag.Int("interval", 30, "Seconds between intervals.")
-	var batch = flag.Int("batch", 5000, "Batch size.")
-	var maxq = flag.Int("maxq", 2000000, "Max number of message in queue.")
+	var batch = flag.Int("batch", 100, "Batch size.")
+	var maxq = flag.Int("maxq", 100000, "Max number of message in queue.")
 	var ingest = flag.String("ingest", "http://localhost:8081/in", "Ingest server.")
 
 	flag.Parse()
