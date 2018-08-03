@@ -36,7 +36,7 @@ docker run --rm -it txn2/rxtx -h
 ```
 on arm 6/7 based device:
 ```bash
-docker run --rm -it txn2/rxtx:arm32v6-1.0.2 -h
+docker run --rm -it txn2/rxtx:arm32v6-1.2.0 -h
 ```
 
 
