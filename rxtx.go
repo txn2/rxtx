@@ -3,21 +3,21 @@ package main
 import (
 	"flag"
 	"io/ioutil"
-	"os"
+	"net/http"
 	"time"
 
-	"net/http"
+	"fmt"
 
-	"github.com/bhoriuchi/go-bunyan/bunyan"
-	"github.com/cjimti/gin-bunyan"
-	"github.com/txn2/rxtx/rtq"
+	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/txn2/rxtx/rtq"
+	"go.uber.org/zap"
 )
 
 func main() {
 	var port = flag.String("port", "8080", "Server port.")
 	var path = flag.String("path", "./", "Directory to store database.")
-	var name = flag.String("name", "rxtx", "Service name.")
+	//var name = flag.String("name", "rxtx", "Service name.")
 	var interval = flag.Int("interval", 60, "Seconds between intervals.")
 	var batch = flag.Int("batch", 100, "Batch size.")
 	var maxq = flag.Int("maxq", 100000, "Max number of message in queue.")
@@ -25,26 +25,27 @@ func main() {
 
 	flag.Parse()
 
-	logConfig := bunyan.Config{
-		Name:   *name,
-		Stream: os.Stdout,
-		Level:  bunyan.LogLevelDebug,
-	}
+	zapCfg := zap.NewProductionConfig()
+	zapCfg.DisableCaller = true
+	zapCfg.DisableStacktrace = true
 
-	blog, err := bunyan.CreateLogger(logConfig)
+	logger, err := zapCfg.Build()
 	if err != nil {
-		panic(err)
+		fmt.Printf("Can not build logger: %s\n", err.Error())
+		return
 	}
 
-	blog.Info("Starting rxtx...")
+	logger.Sync()
+
+	logger.Info("Starting rxtx...")
 
 	// database
 	q, err := rtq.NewQ("rxtx", rtq.Config{
-		Interval:   time.Duration(*interval) * time.Second, // send every 10 seconds
-		Batch:      *batch,                                 // batch size
-		Logger:     &blog,
-		Receiver:   *ingest, // can receive a POST with JSON txMessageBatch
+		Interval:   time.Duration(*interval) * time.Second,
+		Batch:      *batch,
 		MaxInQueue: *maxq,
+		Logger:     logger,
+		Receiver:   *ingest,
 		Path:       *path,
 	})
 	if err != nil {
@@ -58,8 +59,8 @@ func main() {
 	// discard default logger
 	gin.DefaultWriter = ioutil.Discard
 
-	// get a router
-	r := gin.Default()
+	// gin router
+	r := gin.New()
 
 	// add queue to the context
 	r.Use(func(c *gin.Context) {
@@ -67,14 +68,14 @@ func main() {
 		c.Next()
 	})
 
-	// use bunyan logger
-	r.Use(ginbunyan.Ginbunyan(&blog))
+	// use zap logger
+	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 
 	rxRoute := "/rx/:producer/:key/*label"
 	r.POST(rxRoute, rtq.RxRouteHandler)
 	r.OPTIONS(rxRoute, preflight)
 
-	blog.Info("Listening on port %s", *port)
+	logger.Info("Listening on port: " + *port)
 	// block on server run
 	r.Run(":" + *port)
 }
