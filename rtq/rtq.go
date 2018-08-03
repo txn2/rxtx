@@ -231,7 +231,9 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 				b := tx.Bucket([]byte("mq"))
 				id, _ := b.NextSequence()
 
-				msg.Seq = fmt.Sprintf("%d%d%d%012d", msg.Time.Year(), msg.Time.Month(), msg.Time.Day(), id)
+				df := msg.Time.Format("20060102")
+
+				msg.Seq = fmt.Sprintf("%s%012d", df, id)
 
 				buf, err := json.Marshal(msg)
 				if err != nil {
