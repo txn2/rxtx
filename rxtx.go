@@ -17,7 +17,6 @@ import (
 func main() {
 	var port = flag.String("port", "8080", "Server port.")
 	var path = flag.String("path", "./", "Directory to store database.")
-	//var name = flag.String("name", "rxtx", "Service name.")
 	var interval = flag.Int("interval", 60, "Seconds between intervals.")
 	var batch = flag.Int("batch", 100, "Batch size.")
 	var maxq = flag.Int("maxq", 100000, "Max number of message in queue.")
@@ -35,7 +34,10 @@ func main() {
 		return
 	}
 
-	logger.Sync()
+	err = logger.Sync()
+	if err != nil {
+		fmt.Println("WARNING: Logger sync error: " + err.Error())
+	}
 
 	logger.Info("Starting rxtx...")
 
