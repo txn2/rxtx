@@ -97,7 +97,7 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 		Uuid: uuidV4.String(),
 	}
 
-	rt.db.View(func(tx *bolt.Tx) error {
+	err := rt.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("mq"))
 
 		// get bucket stats
@@ -128,7 +128,11 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 		i := 1
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			msg := Message{}
-			json.Unmarshal(v, &msg)
+			err := json.Unmarshal(v, &msg)
+			if err != nil {
+				rt.cfg.Logger.Warn("Can not unmarshal queued entry: " + err.Error())
+				continue
+			}
 			mb.Messages = append(mb.Messages, msg)
 			i++
 			if i > rt.cfg.Batch {
@@ -138,6 +142,10 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 
 		return nil
 	})
+
+	if err != nil {
+		rt.cfg.Logger.Error("bbolt db View error: " + err.Error())
+	}
 
 	mb.Size = len(mb.Messages)
 
