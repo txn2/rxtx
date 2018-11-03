@@ -16,10 +16,16 @@ func RxRouteHandler(c *gin.Context) {
 
 	rawData, _ := c.GetRawData()
 
+	q := c.MustGet("Q").(*rtQ)
+
 	// all data is json
 	payload := make(map[string]interface{})
 	err := json.Unmarshal(rawData, &payload)
 	if err != nil {
+
+		// increment metric msg_errors
+		q.cfg.MsgError.Inc()
+
 		c.JSON(500, gin.H{
 			"status":  "FAIL",
 			"message": fmt.Sprintf("could not unmarshal json: %s", rawData),
@@ -36,9 +42,13 @@ func RxRouteHandler(c *gin.Context) {
 	}
 
 	// write the message
-	q := c.MustGet("Q").(*rtQ)
+
 	err = q.QWrite(msg)
 	if err != nil {
+
+		// increment metric msg_errors
+		q.cfg.MsgError.Inc()
+
 		c.JSON(500, gin.H{
 			"status":  "FAIL",
 			"message": fmt.Sprintf("failed to write message: %s", err.Error()),

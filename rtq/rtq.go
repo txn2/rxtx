@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	"errors"
 
@@ -42,6 +45,12 @@ type Config struct {
 	Logger     *zap.Logger
 	Receiver   string
 	Path       string
+	Processed  prometheus.Counter
+	Queued     prometheus.Gauge
+	TxBatches  prometheus.Counter
+	TxFail     prometheus.Counter
+	DbErr      prometheus.Counter
+	MsgError   prometheus.Counter
 }
 
 // rtQ private struct see NewQ
@@ -54,6 +63,10 @@ type rtQ struct {
 	mCount      int                                       // last reported message count
 	status      func(msg string, fields ...zapcore.Field) // status output
 	statusError func(msg string, fields ...zapcore.Field) // status error output
+}
+
+func (rt *rtQ) GetMessageCount() int {
+	return rt.mCount
 }
 
 // NewQ returns a new rtQ
@@ -103,6 +116,9 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 		// get bucket stats
 		stats := bucket.Stats()
 
+		// metric: messages_in_queue
+		rt.cfg.Queued.Set(float64(stats.KeyN))
+
 		rt.status("QueueState", zapcore.Field{
 			Key:     "TotalRecords",
 			Type:    zapcore.Int32Type,
@@ -144,6 +160,9 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 	})
 
 	if err != nil {
+		// increment metric db_errors
+		rt.cfg.DbErr.Inc()
+
 		rt.cfg.Logger.Error("bbolt db View error: " + err.Error())
 	}
 
@@ -217,6 +236,10 @@ func (rt *rtQ) tx() {
 	// try to send
 	err := rt.transmit(mb)
 	if err != nil {
+
+		// increment metric tx_fails
+		rt.cfg.TxFail.Inc()
+
 		// transmission failed
 		rt.status("Transmission", zapcore.Field{
 			Key:    "TransmissionError",
@@ -231,6 +254,9 @@ func (rt *rtQ) tx() {
 		rt.waitTx()
 		return
 	}
+
+	// increment metric tx_batches
+	rt.cfg.TxBatches.Inc()
 
 	rt.status("TransmissionComplete", zapcore.Field{
 		Key:     "RemovingMessages",
@@ -256,11 +282,8 @@ func (rt *rtQ) waitTx() {
 // Write to the queue
 func (rt *rtQ) QWrite(msg Message) error {
 
-	rt.status("ReceiverStatus", zapcore.Field{
-		Key:     "KeyValues",
-		Type:    zapcore.Int32Type,
-		Integer: int64(len(msg.Payload)),
-	})
+	// increment metric
+	rt.cfg.Processed.Inc()
 
 	rt.mq <- msg
 
@@ -274,7 +297,7 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 	for {
 		select {
 		case msg := <-mq:
-			db.Update(func(tx *bolt.Tx) error {
+			err := db.Update(func(tx *bolt.Tx) error {
 				uuidV4, _ := uuid.NewV4()
 
 				msg.Time = time.Now()
@@ -295,8 +318,12 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 
 				return nil
 			})
+			if err != nil {
+				fmt.Println("Error updating database. FATAL")
+				os.Exit(1)
+			}
 		case rmi := <-remove:
-			db.Update(func(tx *bolt.Tx) error {
+			err := db.Update(func(tx *bolt.Tx) error {
 				bucket := tx.Bucket([]byte("mq"))
 
 				c := bucket.Cursor()
@@ -313,6 +340,10 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 
 				return nil
 			})
+			if err != nil {
+				fmt.Println("Error updating database. FATAL")
+				os.Exit(1)
+			}
 
 		}
 	}

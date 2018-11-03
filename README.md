@@ -87,6 +87,17 @@ curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me
  time for i in {1..1000}; do curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me/generic_data/generic/test/data; done
 ```
 
+### Profile
+
+```bash
+go build ./rxtx.go && time ./rxtx --path=./data/ --cpuprofile=rxtxcpu.prof --memprofile=rxtxmem.prof
+```
+
+Browser-based profile viewer:
+```bash
+go tool pprof -http=:8081 rxtxcpu.prof
+```
+
 ### Building and Releasing
 
 **rxtx** uses [GORELEASER] to build binaries and [Docker] containers.
