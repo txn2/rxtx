@@ -95,8 +95,22 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 		statusError: cfg.Logger.Error,
 	}
 
-	go rtq.tx() // start transmitting
-	//rtq.QStats(b) // start status monitoring
+	// start transmitting
+	go func() {
+		// endless loop
+		for {
+			rtq.tx()
+			rtq.status("TransmissionStatus", zapcore.Field{
+				Key:     "WaitSecond",
+				Type:    zapcore.Int32Type,
+				Integer: int64(rtq.cfg.Interval / time.Second),
+			})
+
+			// wait for interval to pass
+			<-time.After(rtq.cfg.Interval)
+		}
+
+	}()
 
 	return rtq, nil
 }
@@ -104,9 +118,9 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 // getMessageBatch starts at the first record and
 // builds a MessageBatch for each found key up to the
 // batch size.
-func (rt *rtQ) getMessageBatch() MessageBatch {
+func (rt *rtQ) getMessageBatch() *MessageBatch {
 	uuidV4, _ := uuid.NewV4()
-	mb := MessageBatch{
+	mb := &MessageBatch{
 		Uuid: uuidV4.String(),
 	}
 
@@ -172,7 +186,7 @@ func (rt *rtQ) getMessageBatch() MessageBatch {
 }
 
 // transmit attempts to transmit a message batch
-func (rt *rtQ) transmit(msgB MessageBatch) error {
+func (rt *rtQ) transmit(msgB *MessageBatch) error {
 
 	jsonStr, err := json.Marshal(msgB)
 	if err != nil {
@@ -223,7 +237,6 @@ func (rt *rtQ) tx() {
 	if mb.Size < 1 {
 		// nothing to send
 		rt.status("TransmissionSkipEmpty")
-		rt.waitTx()
 		return
 	}
 
@@ -251,7 +264,6 @@ func (rt *rtQ) tx() {
 		if rt.mCount > rt.cfg.MaxInQueue {
 			rt.remove <- rt.mCount - rt.cfg.MaxInQueue
 		}
-		rt.waitTx()
 		return
 	}
 
@@ -264,19 +276,6 @@ func (rt *rtQ) tx() {
 		Integer: int64(mb.Size),
 	})
 	rt.remove <- mb.Size
-	rt.waitTx()
-}
-
-// waitTx sleeps for rt.cfg.Interval * time.Second then performs a tx.
-func (rt *rtQ) waitTx() {
-	rt.status("TransmissionStatus", zapcore.Field{
-		Key:     "WaitSecond",
-		Type:    zapcore.Int32Type,
-		Integer: int64(rt.cfg.Interval / time.Second),
-	})
-
-	time.Sleep(rt.cfg.Interval)
-	rt.tx() // recursion
 }
 
 // Write to the queue
