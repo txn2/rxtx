@@ -11,14 +11,11 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/gin-contrib/zap"
+	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-
-	"github.com/gin-contrib/zap"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	"github.com/gin-gonic/gin"
 	"github.com/txn2/rxtx/rtq"
 	"go.uber.org/zap"
 )
@@ -104,32 +101,32 @@ func main() {
 
 	// Prometheus Metrics
 	processed := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "total_messages_received",
+		Name: "rxtx_total_messages_received",
 		Help: "Total number of messages received.",
 	})
 
 	queued := promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "messages_in_queue",
+		Name: "rxtx_messages_in_queue",
 		Help: "Number os messages in the queue.",
 	})
 
 	txBatches := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tx_batches",
+		Name: "rxtx_tx_batches",
 		Help: "Total number of batch transmissions.",
 	})
 
 	txFail := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tx_fails",
+		Name: "rxtx_tx_fails",
 		Help: "Total number of transaction errors.",
 	})
 
 	dbErr := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "db_errors",
+		Name: "rxtx_db_errors",
 		Help: "Total number database errors.",
 	})
 
 	msgErr := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "msg_errors",
+		Name: "rxtx_msg_errors",
 		Help: "Total number message errors.",
 	})
 
