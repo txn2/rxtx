@@ -274,7 +274,7 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 	for {
 		select {
 		case msg := <-mq:
-			db.Update(func(tx *bolt.Tx) error {
+			_ = db.Update(func(tx *bolt.Tx) error {
 				uuidV4, _ := uuid.NewV4()
 
 				msg.Time = time.Now()
@@ -291,12 +291,12 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 				if err != nil {
 					return err
 				}
-				b.Put([]byte(msg.Seq), buf)
+				_ = b.Put([]byte(msg.Seq), buf)
 
 				return nil
 			})
 		case rmi := <-remove:
-			db.Update(func(tx *bolt.Tx) error {
+			_ = db.Update(func(tx *bolt.Tx) error {
 				bucket := tx.Bucket([]byte("mq"))
 
 				c := bucket.Cursor()
@@ -304,7 +304,7 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 				// get the first rt.cfg.Batch
 				i := 1
 				for k, _ := c.First(); k != nil; k, _ = c.Next() {
-					c.Delete()
+					_ = c.Delete()
 					i++
 					if i > rmi {
 						break
