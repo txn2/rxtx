@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 
 	"errors"
 
@@ -37,6 +38,20 @@ type MessageBatch struct {
 	Messages []Message `json:"messages"`
 }
 
+// Pmx
+type Pmx struct {
+	Processed         prometheus.Counter
+	Queued            prometheus.Gauge
+	TxBatches         prometheus.Counter
+	TxFail            prometheus.Counter
+	DbErr             prometheus.Counter
+	MsgError          prometheus.Counter
+	ResponseTime      prometheus.Summary
+	ResponseTimeAsync prometheus.Summary
+	ProcessingTime    prometheus.Summary
+	ProcessingErrors  prometheus.Counter
+}
+
 // Config options for rxtx
 type Config struct {
 	Interval   time.Duration
@@ -45,12 +60,7 @@ type Config struct {
 	Logger     *zap.Logger
 	Receiver   string
 	Path       string
-	Processed  prometheus.Counter
-	Queued     prometheus.Gauge
-	TxBatches  prometheus.Counter
-	TxFail     prometheus.Counter
-	DbErr      prometheus.Counter
-	MsgError   prometheus.Counter
+	Pmx        Pmx
 }
 
 // rtQ private struct see NewQ
@@ -80,6 +90,57 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Prometheus Metrics
+	cfg.Pmx.Processed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "rxtx_total_messages_received",
+		Help: "Total number of messages received.",
+	})
+
+	cfg.Pmx.Queued = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "rxtx_messages_in_queue",
+		Help: "Number os messages in the queue.",
+	})
+
+	cfg.Pmx.TxBatches = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "rxtx_tx_batches",
+		Help: "Total number of batch transmissions.",
+	})
+
+	cfg.Pmx.TxFail = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "rxtx_tx_fails",
+		Help: "Total number of transaction errors.",
+	})
+
+	cfg.Pmx.DbErr = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "rxtx_db_errors",
+		Help: "Total number database errors.",
+	})
+
+	cfg.Pmx.MsgError = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "rxtx_msg_errors",
+		Help: "Total number message errors.",
+	})
+
+	cfg.Pmx.ResponseTime = promauto.NewSummary(prometheus.SummaryOpts{
+		Name: "rxtx_response_time",
+		Help: "Time it took to respond to a post.",
+	})
+
+	cfg.Pmx.ResponseTimeAsync = promauto.NewSummary(prometheus.SummaryOpts{
+		Name: "rxtx_response_time_async",
+		Help: "Time it took to respond to a async post.",
+	})
+
+	cfg.Pmx.ProcessingTime = promauto.NewSummary(prometheus.SummaryOpts{
+		Name: "rxtx_processing_time",
+		Help: "Time it took to process a post.",
+	})
+
+	cfg.Pmx.ProcessingErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "rxtx_processing_errors",
+		Help: "Total number of processing errors.",
+	})
 
 	mq := make(chan Message, 0)
 	remove := make(chan int, 0)
@@ -131,7 +192,7 @@ func (rt *rtQ) getMessageBatch() *MessageBatch {
 		stats := bucket.Stats()
 
 		// metric: messages_in_queue
-		rt.cfg.Queued.Set(float64(stats.KeyN))
+		rt.cfg.Pmx.Queued.Set(float64(stats.KeyN))
 
 		rt.status("QueueState", zapcore.Field{
 			Key:     "TotalRecords",
@@ -175,7 +236,7 @@ func (rt *rtQ) getMessageBatch() *MessageBatch {
 
 	if err != nil {
 		// increment metric db_errors
-		rt.cfg.DbErr.Inc()
+		rt.cfg.Pmx.DbErr.Inc()
 
 		rt.cfg.Logger.Error("bbolt db View error: " + err.Error())
 	}
@@ -251,7 +312,7 @@ func (rt *rtQ) tx() {
 	if err != nil {
 
 		// increment metric tx_fails
-		rt.cfg.TxFail.Inc()
+		rt.cfg.Pmx.TxFail.Inc()
 
 		// transmission failed
 		rt.status("Transmission", zapcore.Field{
@@ -268,7 +329,7 @@ func (rt *rtQ) tx() {
 	}
 
 	// increment metric tx_batches
-	rt.cfg.TxBatches.Inc()
+	rt.cfg.Pmx.TxBatches.Inc()
 
 	rt.status("TransmissionComplete", zapcore.Field{
 		Key:     "RemovingMessages",
@@ -282,7 +343,7 @@ func (rt *rtQ) tx() {
 func (rt *rtQ) QWrite(msg Message) error {
 
 	// increment metric
-	rt.cfg.Processed.Inc()
+	rt.cfg.Pmx.Processed.Inc()
 
 	rt.mq <- msg
 
@@ -313,7 +374,7 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 				if err != nil {
 					return err
 				}
-				b.Put([]byte(msg.Seq), buf)
+				_ = b.Put([]byte(msg.Seq), buf)
 
 				return nil
 			})
@@ -330,7 +391,7 @@ func messageHandler(db *bolt.DB, mq chan Message, remove chan int) {
 				// get the first rt.cfg.Batch
 				i := 1
 				for k, _ := c.First(); k != nil; k, _ = c.Next() {
-					c.Delete()
+					_ = c.Delete()
 					i++
 					if i > rmi {
 						break

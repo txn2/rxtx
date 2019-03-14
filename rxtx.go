@@ -13,8 +13,6 @@ import (
 
 	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/txn2/rxtx/rtq"
 	"go.uber.org/zap"
@@ -99,37 +97,6 @@ func main() {
 
 	logger.Info("Starting rxtx...")
 
-	// Prometheus Metrics
-	processed := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "rxtx_total_messages_received",
-		Help: "Total number of messages received.",
-	})
-
-	queued := promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "rxtx_messages_in_queue",
-		Help: "Number os messages in the queue.",
-	})
-
-	txBatches := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "rxtx_tx_batches",
-		Help: "Total number of batch transmissions.",
-	})
-
-	txFail := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "rxtx_tx_fails",
-		Help: "Total number of transaction errors.",
-	})
-
-	dbErr := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "rxtx_db_errors",
-		Help: "Total number database errors.",
-	})
-
-	msgErr := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "rxtx_msg_errors",
-		Help: "Total number message errors.",
-	})
-
 	// database
 	q, err := rtq.NewQ("rxtx", rtq.Config{
 		Interval:   time.Duration(*interval) * time.Second,
@@ -138,12 +105,6 @@ func main() {
 		Logger:     logger,
 		Receiver:   *ingest,
 		Path:       *path,
-		Processed:  processed,
-		Queued:     queued,
-		TxBatches:  txBatches,
-		TxFail:     txFail,
-		DbErr:      dbErr,
-		MsgError:   msgErr,
 	})
 	if err != nil {
 		panic(err)
@@ -171,8 +132,12 @@ func main() {
 	}
 
 	rxRoute := "/rx/:producer/:key/*label"
-	r.POST(rxRoute, rtq.RxRouteHandler)
+	r.POST(rxRoute, q.RxRouteHandler)
 	r.OPTIONS(rxRoute, preflight)
+
+	rxRouteAsync := "/rxa/:producer/:key/*label"
+	r.POST(rxRouteAsync, q.RxRouteHandlerAsync)
+	r.OPTIONS(rxRouteAsync, preflight)
 
 	// Prometheus Metrics
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
