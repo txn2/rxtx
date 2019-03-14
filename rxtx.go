@@ -132,6 +132,10 @@ func main() {
 	}
 
 	rxRoute := "/rx/:producer/:key/*label"
+	r.POST(rxRoute, q.RxRouteHandlerAsync)
+	r.OPTIONS(rxRoute, preflight)
+
+	rxRouteSync := "/rxs/:producer/:key/*label"
 	r.POST(rxRoute, q.RxRouteHandler)
 	r.OPTIONS(rxRoute, preflight)
 

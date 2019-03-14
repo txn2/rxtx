@@ -51,7 +51,13 @@ dockers:
     image_templates:
       - "txn2/rxtx:latest"
       - "txn2/rxtx:{{ .Version }}"
+      - "txn2/rxtx:{{ .Tag }}"
+      - "txn2/rxtx:v{{ .Major }}"
     dockerfile: dockerfiles/amd64/Dockerfile
+    build_flag_templates:
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
   -
     goos: linux
     goarch: arm
@@ -61,8 +67,13 @@ dockers:
     image_templates:
       - 'txn2/rxtx:arm32v6-latest'
       - 'txn2/rxtx:arm32v6-{{ .Version }}'
+      - "txn2/rxtx:arm32v6-{{ .Tag }}"
+      - "txn2/rxtx:arm32v6-v{{ .Major }}"
     dockerfile: dockerfiles/arm32v6/Dockerfile
-
+    build_flag_templates:
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
 brew:
   name: rxtx
 
