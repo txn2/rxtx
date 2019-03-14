@@ -49,8 +49,8 @@ dockers:
     binaries:
       - rxtx
     image_templates:
-      - 'txn2/rxtx:latest'
-      - 'txn2/rxtx:{{ .Version }}'
+      - "txn2/rxtx:latest"
+      - "txn2/rxtx:{{ .Version }}"
     dockerfile: dockerfiles/amd64/Dockerfile
   -
     goos: linux
@@ -59,8 +59,8 @@ dockers:
     binaries:
       - rxtx
     image_templates:
-      - 'txn2/rxtx:latest'
-      - 'txn2/rxtx:{{ .Version }}'
+      - 'txn2/rxtx:arm32v6-latest'
+      - 'txn2/rxtx:arm32v6-{{ .Version }}'
     dockerfile: dockerfiles/arm32v6/Dockerfile
 
 brew:
