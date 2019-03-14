@@ -46,22 +46,34 @@ dockers:
     goos: linux
     goarch: amd64
     goarm: ''
-    binary: rxtx
-    image: txn2/rxtx
+    binaries:
+      - rxtx
+    image_templates:
+      - "txn2/rxtx:latest"
+      - "txn2/rxtx:{{ .Version }}"
+      - "txn2/rxtx:{{ .Tag }}"
+      - "txn2/rxtx:v{{ .Major }}"
     dockerfile: dockerfiles/amd64/Dockerfile
-    tag_templates:
-    - latest
-    - "{{ .Version }}"
+    build_flag_templates:
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
   -
     goos: linux
     goarch: arm
     goarm: 6
-    binary: rxtx
-    image: txn2/rxtx
+    binaries:
+      - rxtx
+    image_templates:
+      - 'txn2/rxtx:arm32v6-latest'
+      - 'txn2/rxtx:arm32v6-{{ .Version }}'
+      - "txn2/rxtx:arm32v6-{{ .Tag }}"
+      - "txn2/rxtx:arm32v6-v{{ .Major }}"
     dockerfile: dockerfiles/arm32v6/Dockerfile
-    tag_templates:
-    - "arm32v6-{{ .Version }}"
-
+    build_flag_templates:
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
 brew:
   name: rxtx
 
@@ -77,4 +89,4 @@ brew:
 
   homepage: https://github.com/txn2/rxtx
 
-  description: "Data queuing and transmission."
+  description: "Data queuing, batching and re-transmission."
