@@ -16,6 +16,7 @@ require (
 	github.com/prometheus/client_golang v0.9.2
 	github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
 	github.com/ugorji/go v0.0.0-20180407103000-f3cacc17c85e
+	go.etcd.io/bbolt v1.3.3 // indirect
 	go.uber.org/atomic v1.3.2
 	go.uber.org/multierr v0.0.0-20180122172545-ddea229ff1df
 	go.uber.org/zap v0.0.0-20180531205250-88c71ae3d702

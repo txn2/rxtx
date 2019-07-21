@@ -10,10 +10,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/coreos/bbolt"
 	uuid "github.com/nu7hatch/gouuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
