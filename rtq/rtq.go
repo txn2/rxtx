@@ -3,19 +3,17 @@ package rtq
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/coreos/bbolt"
+	uuid "github.com/nu7hatch/gouuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-
-	"errors"
-
-	"github.com/coreos/bbolt"
-	"github.com/satori/go.uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

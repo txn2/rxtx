@@ -12,6 +12,7 @@ require (
 	github.com/mattn/go-isatty v0.0.4
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 	github.com/modern-go/reflect2 v0.0.0-20180511053014-58118c1ea916
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/prometheus/client_golang v0.9.2
 	github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
 	github.com/ugorji/go v0.0.0-20180407103000-f3cacc17c85e

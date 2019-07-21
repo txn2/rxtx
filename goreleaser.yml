@@ -1,6 +1,6 @@
 # Build customization
 build:
-  main: ./rxtx.go
+  main: ./cmd/rxtx.go
   binary: rxtx
 
   ldflags: -a -installsuffix cgo
