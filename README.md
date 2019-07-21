@@ -86,6 +86,61 @@ curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me
 ```bash
  time for i in {1..1000}; do curl -w "\n" -d "{\"generic\": \"$RANDOM\"}" -X POST http://localhost:8080/rx/me/generic_data/generic/test/data; done
 ```
+#### Example Batch
+
+```json
+{  
+   "uuid":"d7642975-4241-4f43-b704-b67621b184b8",
+   "size":4,
+   "messages":[  
+      {  
+         "seq":"2019072100000000038",
+         "time":"2019-07-21T02:44:49.560087Z",
+         "uuid":"a93cfe42-79c5-4a32-9dc0-6b77b68d0926",
+         "producer":"me",
+         "label":"/generic/test/data",
+         "key":"generic_data",
+         "payload":{  
+            "generic":"6955"
+         }
+      },
+      {  
+         "seq":"2019072100000000039",
+         "time":"2019-07-21T02:44:50.6214579Z",
+         "uuid":"66042da0-b0c1-447c-ab0b-66c887e8b56a",
+         "producer":"me",
+         "label":"/generic/test/data",
+         "key":"generic_data",
+         "payload":{  
+            "generic":"8923"
+         }
+      },
+      {  
+         "seq":"2019072100000000040",
+         "time":"2019-07-21T02:44:51.622978Z",
+         "uuid":"0ec3f6d7-905f-42bc-896e-515bf8f2a06d",
+         "producer":"me",
+         "label":"/generic/test/data",
+         "key":"generic_data",
+         "payload":{  
+            "generic":"28324"
+         }
+      },
+      {  
+         "seq":"2019072100000000046",
+         "time":"2019-07-21T02:44:57.8990519Z",
+         "uuid":"bfa2d06d-a8f4-4125-93bc-d08a070079d7",
+         "producer":"me",
+         "label":"/generic/test/data",
+         "key":"generic_data",
+         "payload":{  
+            "generic":"31460"
+         }
+      }
+   ]
+}
+```
+
 
 ### Profile
 
