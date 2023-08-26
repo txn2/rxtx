@@ -10,9 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func (rt *rtQ) processMessage(msg Message, rawData []byte) error {
+func (rt *RtQ) processMessage(msg Message, rawData []byte) error {
 	start := time.Now()
-	defer rt.cfg.Pmx.ProcessingTime.Observe(float64(time.Since(start).Seconds()))
+	defer rt.cfg.Pmx.ProcessingTime.Observe(time.Since(start).Seconds())
 
 	// all data is json
 	payload := make(map[string]interface{})
@@ -38,9 +38,9 @@ func (rt *rtQ) processMessage(msg Message, rawData []byte) error {
 }
 
 // RxRouteHandler handles the http route for inbound data
-func (rt *rtQ) RxRouteHandler(c *gin.Context) {
+func (rt *RtQ) RxRouteHandler(c *gin.Context) {
 	start := time.Now()
-	defer rt.cfg.Pmx.ResponseTime.Observe(float64(time.Since(start).Seconds()))
+	defer rt.cfg.Pmx.ResponseTime.Observe(time.Since(start).Seconds())
 
 	rawData, err := c.GetRawData()
 
@@ -73,7 +73,7 @@ func (rt *rtQ) RxRouteHandler(c *gin.Context) {
 	})
 }
 
-func (rt *rtQ) RxRouteHandlerAsync(c *gin.Context) {
+func (rt *RtQ) RxRouteHandlerAsync(c *gin.Context) {
 	start := time.Now()
 
 	rawData, err := c.GetRawData()
@@ -103,7 +103,7 @@ func (rt *rtQ) RxRouteHandlerAsync(c *gin.Context) {
 		}
 	}(msg, rawData)
 
-	rt.cfg.Pmx.ResponseTimeAsync.Observe(float64(time.Since(start).Seconds()))
+	rt.cfg.Pmx.ResponseTimeAsync.Observe(time.Since(start).Seconds())
 	c.JSON(200, gin.H{
 		"status": "OK",
 	})

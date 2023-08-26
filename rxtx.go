@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -115,7 +115,7 @@ func main() {
 	gin.DisableConsoleColor()
 
 	// discard default logger
-	gin.DefaultWriter = ioutil.Discard
+	gin.DefaultWriter = io.Discard
 
 	// gin router
 	r := gin.New()
@@ -149,7 +149,10 @@ func main() {
 	logger.Info("Listening on port: " + *port)
 
 	// block on server run
-	r.Run(":" + *port)
+	err = r.Run(":" + *port)
+	if err != nil {
+		logger.Fatal("unable to start server", zap.Error(err))
+	}
 }
 
 // preflight permissive CORS headers

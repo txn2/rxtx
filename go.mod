@@ -1,24 +1,49 @@
 module github.com/txn2/rxtx
 
-go 1.12
+go 1.21
 
 require (
-	github.com/coreos/bbolt v0.0.0-20180318001526-af9db2027c98
-	github.com/gin-contrib/sse v0.1.0
-	github.com/gin-contrib/zap v0.0.0-20180322124736-26d5a72cacce
-	github.com/gin-gonic/gin v1.7.3
-	github.com/golang/protobuf v1.3.3
-	github.com/json-iterator/go v1.1.9
-	github.com/mattn/go-isatty v0.0.12
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
-	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
-	github.com/prometheus/client_golang v0.9.2
+	github.com/gin-contrib/zap v0.1.0
+	github.com/gin-gonic/gin v1.9.1
+	github.com/prometheus/client_golang v1.16.0
 	github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
-	github.com/ugorji/go v1.1.7
-	go.uber.org/atomic v1.3.2
-	go.uber.org/multierr v0.0.0-20180122172545-ddea229ff1df
-	go.uber.org/zap v0.0.0-20180531205250-88c71ae3d702
-	golang.org/x/sys v0.0.0-20200116001909-b77594299b42
-	gopkg.in/go-playground/validator.v8 v8.18.2
-	gopkg.in/yaml.v2 v2.2.8
+	go.etcd.io/bbolt v1.3.7
+	go.uber.org/zap v1.25.0
+)
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bytedance/sonic v1.9.1 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.14.0 // indirect
+	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
+	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
+	github.com/prometheus/common v0.42.0 // indirect
+	github.com/prometheus/procfs v0.10.1 // indirect
+	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	github.com/ugorji/go/codec v1.2.11 // indirect
+	go.opentelemetry.io/otel v1.10.0 // indirect
+	go.opentelemetry.io/otel/trace v1.10.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
+	golang.org/x/arch v0.3.0 // indirect
+	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -2,8 +2,11 @@ package rtq
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -11,11 +14,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-
-	"errors"
-
-	"github.com/coreos/bbolt"
 	"github.com/satori/go.uuid"
+	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -38,7 +38,6 @@ type MessageBatch struct {
 	Messages []Message `json:"messages"`
 }
 
-// Pmx
 type Pmx struct {
 	Processed         prometheus.Counter
 	Queued            prometheus.Gauge
@@ -63,8 +62,8 @@ type Config struct {
 	Pmx        Pmx
 }
 
-// rtQ private struct see NewQ
-type rtQ struct {
+// RtQ private struct see NewQ
+type RtQ struct {
 	db          *bolt.DB                                  // the database
 	cfg         Config                                    // configuration
 	mq          chan Message                              // message channel
@@ -75,12 +74,12 @@ type rtQ struct {
 	statusError func(msg string, fields ...zapcore.Field) // status error output
 }
 
-func (rt *rtQ) GetMessageCount() int {
+func (rt *RtQ) GetMessageCount() int {
 	return rt.mCount
 }
 
-// NewQ returns a new rtQ
-func NewQ(name string, cfg Config) (*rtQ, error) {
+// NewQ returns a new RtQ
+func NewQ(name string, cfg Config) (*RtQ, error) {
 	db, err := bolt.Open(cfg.Path+name+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
@@ -142,12 +141,12 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 		Help: "Total number of processing errors.",
 	})
 
-	mq := make(chan Message, 0)
-	remove := make(chan int, 0)
+	mq := make(chan Message)
+	remove := make(chan int)
 
 	go messageHandler(db, mq, remove)
 
-	rtq := &rtQ{
+	rtq := &RtQ{
 		db:          db,     // database
 		cfg:         cfg,    // Config
 		mq:          mq,     // Message channel
@@ -179,7 +178,7 @@ func NewQ(name string, cfg Config) (*rtQ, error) {
 // getMessageBatch starts at the first record and
 // builds a MessageBatch for each found key up to the
 // batch size.
-func (rt *rtQ) getMessageBatch() *MessageBatch {
+func (rt *RtQ) getMessageBatch() *MessageBatch {
 	uuidV4, _ := uuid.NewV4()
 	mb := &MessageBatch{
 		Uuid: uuidV4.String(),
@@ -238,7 +237,7 @@ func (rt *rtQ) getMessageBatch() *MessageBatch {
 		// increment metric db_errors
 		rt.cfg.Pmx.DbErr.Inc()
 
-		rt.cfg.Logger.Error("bbolt db View error: " + err.Error())
+		rt.cfg.Logger.Error("bolt db View error: " + err.Error())
 	}
 
 	mb.Size = len(mb.Messages)
@@ -246,8 +245,17 @@ func (rt *rtQ) getMessageBatch() *MessageBatch {
 	return mb
 }
 
+func customDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	dialer := &net.Dialer{
+		Timeout:   5 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+
+	return dialer.DialContext(ctx, network, addr)
+}
+
 // transmit attempts to transmit a message batch
-func (rt *rtQ) transmit(msgB *MessageBatch) error {
+func (rt *RtQ) transmit(msgB *MessageBatch) error {
 
 	jsonStr, err := json.Marshal(msgB)
 	if err != nil {
@@ -258,9 +266,7 @@ func (rt *rtQ) transmit(msgB *MessageBatch) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 10 * time.Second,
-		}).Dial,
+		DialContext:         customDialContext,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
 
@@ -273,14 +279,19 @@ func (rt *rtQ) transmit(msgB *MessageBatch) error {
 		return err
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			rt.cfg.Logger.Error("Unable to close transmit body", zap.Error(err))
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != 200 {
 		return errors.New(resp.Status)
 	}
 
 	rt.status("TransmissionStatus", zapcore.Field{
-		Key:    "Reponse",
+		Key:    "Response",
 		Type:   zapcore.StringType,
 		String: resp.Status,
 	})
@@ -290,7 +301,7 @@ func (rt *rtQ) transmit(msgB *MessageBatch) error {
 
 // tx gets a batch of messages and transmits it to the server (receiver)
 // TODO: some math to make sure we keep up (for now remove the batch if the count is above the threshold)
-func (rt *rtQ) tx() {
+func (rt *RtQ) tx() {
 
 	// get a message batch
 	mb := rt.getMessageBatch()
@@ -339,8 +350,8 @@ func (rt *rtQ) tx() {
 	rt.remove <- mb.Size
 }
 
-// Write to the queue
-func (rt *rtQ) QWrite(msg Message) error {
+// QWrite Write to the queue
+func (rt *RtQ) QWrite(msg Message) error {
 
 	// increment metric
 	rt.cfg.Pmx.Processed.Inc()
