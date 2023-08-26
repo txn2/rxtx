@@ -263,6 +263,9 @@ func (rt *RtQ) transmit(msgB *MessageBatch) error {
 	}
 
 	req, err := http.NewRequest("POST", rt.cfg.Receiver, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	var netTransport = &http.Transport{
